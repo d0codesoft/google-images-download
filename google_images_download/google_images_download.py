@@ -6,7 +6,9 @@
 
 # Import Libraries
 import sys
+
 import selenium.common.exceptions
+import urllib3
 
 version = (3, 0)
 cur_version = sys.version_info
@@ -20,14 +22,13 @@ if cur_version >= version:  # If the Current Version of Python is 3.0 or above
 
     http.client._MAXHEADERS = 1000
 else:  # If the Current Version of Python is 2.x
-    import urllib2
-    from urllib2 import Request, urlopen
-    from urllib2 import URLError, HTTPError
+    from urllib3 import Request, urlopen
+    from urllib3 import URLError, HTTPError
     from urllib import quote
-    import httplib
-    from httplib import IncompleteRead, BadStatusLine
+    import httplib2
+    from httplib2 import IncompleteRead, BadStatusLine
 
-    httplib._MAXHEADERS = 1000
+    httplib2._MAXHEADERS = 1000
 import time  # Importing the time library to check the time of code execution
 import os
 import argparse
@@ -36,7 +37,6 @@ import datetime
 import json
 import re
 import codecs
-import socket
 
 args_list = ["keywords", "keywords_from_file", "prefix_keywords", "suffix_keywords",
              "limit", "format", "color", "color_type", "usage_rights", "size",
@@ -220,6 +220,7 @@ class googleimagesdownload:
         headers = {}
         headers[
             'User-Agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36"
+        headers['accept'] = "text/html,application/xhtml+xml,application/xml,application/signed-exchange"
         if cur_version >= version:  # If the Current Version of Python is 3.0 or above
             try:
                 req = urllib.request.Request(url, headers=headers)
@@ -231,9 +232,9 @@ class googleimagesdownload:
                 sys.exit()
         else:  # If the Current Version of Python is 2.x
             try:
-                req = urllib2.Request(url, headers=headers)
+                req = urllib3.request(url, headers=headers)
                 try:
-                    response = urllib2.urlopen(req)
+                    response = urllib3.urlopen(req)
                 except URLError:  # Handling SSL certificate failed
                     context = ssl._create_unverified_context()
                     response = urlopen(req, context=context)
@@ -255,7 +256,7 @@ class googleimagesdownload:
         from selenium import webdriver
         from selenium.webdriver.common.keys import Keys
         if sys.version_info[0] < 3:
-            reload(sys)
+            #reload(sys)
             sys.setdefaultencoding('utf8')
         options = webdriver.ChromeOptions()
         options.add_argument('--no-sandbox')
@@ -404,7 +405,7 @@ class googleimagesdownload:
         main = data[3]
         info = data[9]
         if info is None:
-            info = data[11]
+            info = data[23]
         formatted_object = {}
         try:
             formatted_object['image_height'] = main[2]
@@ -492,16 +493,16 @@ class googleimagesdownload:
                 headers[
                     'User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
 
-                req1 = urllib2.Request(searchUrl, headers=headers)
-                resp1 = urllib2.urlopen(req1)
+                req1 = urllib3.request(searchUrl, headers=headers)
+                resp1 = urllib3.urlopen(req1)
                 content = str(resp1.read())
                 l1 = content.find('AMhZZ')
                 l2 = content.find('&', l1)
                 urll = content[l1:l2]
 
                 newurl = "https://www.google.com/search?tbs=sbi:" + urll + "&site=search&sa=X"
-                req2 = urllib2.Request(newurl, headers=headers)
-                resp2 = urllib2.urlopen(req2)
+                req2 = urllib3.request(newurl, headers=headers)
+                resp2 = urllib3.urlopen(req2)
                 l3 = content.find('/search?sa=X&amp;q=')
                 l4 = content.find(';', l3 + 19)
                 urll2 = content[l3 + 19:l4]
